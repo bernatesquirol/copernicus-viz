@@ -10,6 +10,10 @@ import Controller from './Controller';
 import ZIPCODES_SF from './data/feature-example-sf.json';
 import points from './data/bernat.json';
 import CITIES from './data/cities.json';
+import low from './data/low.png';
+import mid from './data/mid.png';
+import high from './data/high.png';
+
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiYmVybmF0ZXNxdWlyb2wiLCJhIjoiY2p2anQwc2l0MGk0YTQzcW04N2pjcmpwZiJ9.LUhGlaITYW5t18TJlwDMtg'; 
 
 const ALL_TAL = Immutable.fromJS(points.features).map(f =>
@@ -17,9 +21,9 @@ const ALL_TAL = Immutable.fromJS(points.features).map(f =>
 );
 
 const CITY_LOCATIONS = Immutable.fromJS(CITIES.map(c => [c.latitude,c.longitude]));
-const v = 5;
+const v = 10;
 const sumTotalAmount=(list_coords)=>{
-  console.log(list_coords)
+  //console.log(list_coords)
   
   if (list_coords.length<2) return 0
   let path = turf.lineString([...list_coords]);
@@ -44,11 +48,11 @@ const sumTotalAmount=(list_coords)=>{
       var dist = turf.lineDistance(intersection);
       console.log('dist',dist)
       //console.log(l);
-      var v = 10.0;
+      
       let time_in_line = dist/v;
 
       var corr_respirar = 2*v/16.0 + 1.0;
-      const cig = 22.0;
+      const cig = 12//22
       let pm2_5 = json_obj.properties.value *0.6;
       var total_cigar = (pm2_5/cig)*(time_in_line/24.0)*corr_respirar;
       sum+=total_cigar
@@ -65,12 +69,13 @@ class App extends Component {
       viewport: {
         latitude: 41.4036299,
         longitude:  2.1743558,
-        zoom: 13,
+        zoom: document.documentElement.clientWidth>675?13:12,
         bearing: 0,
         pitch: 0,
         width: window.innerWidth,
-        height: window.innerHeight
+        height: window.innerHeight,
       },
+      v: 10,
       locationsScreen: [],
       cigarValue:0
     };
@@ -80,6 +85,7 @@ class App extends Component {
   render() {
     const {viewport} = this.state;
     const me = this
+    //console.log(h,window.innerHeight,window.innerHeight*0.45)
     return (
       <div>
       <ReactMapGL
@@ -122,8 +128,26 @@ class App extends Component {
           
         />
       </ReactMapGL>
-      <div style={{backgroundColor:'white',height:window.innerHeight*0.2,position:'absolute',left:0,bottom:0,right:0}} >
-        {this.state.cigarValue}
+      <div style={{alignText:"center", align:"center",backgroundColor:'white',height:window.innerHeight*0.2,position:'absolute',left:0,bottom:0,right:0}} >
+        <div style={{margin:'0 auto'}}>
+        <img src={low} style={{height:45}}  alt="Logo" />
+        {/*Array(parseInt(this.state.v)).map((key)=>{
+          console.log('quepax')
+          return <img src={mid} style={{height:45}} alt="Logo" />
+        })*/}
+        <img src={mid} style={{width:this.state.cigarValue*(document.documentElement.clientWidth-60-145),height:45}} alt="Logo" />
+        <img src={high} style={{height:45}} alt="Logo" />
+        </div>
+        <div style={{marginLeft:document.documentElement.clientWidth*0.45}}><input
+            type="range"
+            //disabled={allDay}
+            value={this.state.v}
+            min={1}
+            max={20}
+            step={1}
+            onChange={(evt)=>this.setState({v:evt.target.value})}
+          /> 
+          <br/>v:{this.state.v}<br/>cigars:{Math.round(this.state.cigarValue * 100) / 100}</div>
       </div>
       </div>
     );
