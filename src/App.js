@@ -23,16 +23,39 @@ const sumTotalAmount=(list_coords)=>{
   
   if (list_coords.length<2) return 0
   let path = turf.lineString([...list_coords]);
+  let line = path 
   //let line2 = turf.lineString([[115, -25], [125, -30], [135, -30], [145, -25]]);
-
+  let polygons = []
   let tal = [turf.polygon([[[-5, 52], [-4, 56], [-2, 51], [-7, 54], [-5, 52]]], { name: 'poly1' })]
-  console.log(tal)
+  let sum = 0
   for (const zipcode of ALL_TAL){
-    console.log(turf.lineOverlap(turf.polygon(zipcode.toJSON().geometry.coordinates), path))
-    //console.log(turf.polygon(zipcode.toJSON().geometry.coordinates[0]))
+    //console.log(turf.lineOverlap(, path))
+    let json_obj = zipcode.toJSON()
+    let polygon = turf.polygon(json_obj.geometry.coordinates)
+    polygons.push(polygon)
+    var int = turf.lineIntersect(line, polygon)
+    //console.log(int)
+    let intersectionPointsArray = int.features.map(d => {return d.geometry.coordinates});
     
+    console.log('pointsArray',intersectionPointsArray)
+    if (intersectionPointsArray.length>1){
+      let intersection = turf.lineString([[intersectionPointsArray[0][0],intersectionPointsArray[0][1]], [intersectionPointsArray[1][0],intersectionPointsArray[1][1]]]);
+      
+      var dist = turf.lineDistance(intersection);
+      console.log('dist',dist)
+      //console.log(l);
+      var v = 10.0;
+      let time_in_line = dist/v;
+
+      var corr_respirar = 2*v/16.0 + 1.0;
+      const cig = 22.0;
+      let pm2_5 = json_obj.properties.value *0.6;
+      var total_cigar = (pm2_5/cig)*(time_in_line/24.0)*corr_respirar;
+      sum+=total_cigar
+    }
   }
-  return 0
+  console.log(sum)
+  return sum
 }
 
 class App extends Component {
@@ -48,7 +71,8 @@ class App extends Component {
         width: window.innerWidth,
         height: window.innerHeight
       },
-      locationsScreen: []
+      locationsScreen: [],
+      cigarValue:0
     };
 
   }
@@ -89,11 +113,17 @@ class App extends Component {
           compositeOperation="lighter"
           dotFill="rgba(255,255,255,0.8)"
           renderWhileDragging={true}
-          onProjected={(projected)=>{sumTotalAmount(projected)}}
+          onProjected={
+            (projected)=>{//
+              let cigarValue = sumTotalAmount(projected)
+              if(this.state.cigarValue!=cigarValue)this.setState({cigarValue:cigarValue})
+            }
+          }
+          
         />
       </ReactMapGL>
-      <div>
-        
+      <div style={{backgroundColor:'white',height:window.innerHeight*0.2,position:'absolute',left:0,bottom:0,right:0}} >
+        {this.state.cigarValue}
       </div>
       </div>
     );

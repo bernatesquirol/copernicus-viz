@@ -52,7 +52,7 @@ export default class ChoroplethOverlay extends PureComponent {
     ctx.clearRect(0, 0, width, height);
 
     function projectPoint(lon, lat) {
-      const point = project([lat, lon]);
+      const point = project([lon, lat]);
       /* eslint-disable no-invalid-this */
       this.stream.point(point[0], point[1]);
       /* eslint-enable no-invalid-this */

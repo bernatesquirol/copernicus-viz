@@ -30,6 +30,15 @@ const defaultProps = {
 };
 
 export default class ScatterplotOverlay extends PureComponent {
+  componentWillReceiveProps = (nextProps)=>{
+    console.log(nextProps, this.project)
+    let projected = []
+    for (const location of nextProps.locationsScreen.map((screen)=>this.unproject([screen.x, screen.y]))) {
+      projected.push(location)
+    }
+    
+    if (nextProps.onProjected) nextProps.onProjected(projected)
+  }
   /* eslint-disable max-statements */
   _redraw = ({width, height, ctx, isDragging, project, unproject}) => {
     const {
@@ -44,12 +53,14 @@ export default class ScatterplotOverlay extends PureComponent {
     const locations =  locationsScreen.map((screen)=>unproject([screen.x, screen.y]));
     ctx.clearRect(0, 0, width, height);
     ctx.globalCompositeOperation = compositeOperation;
-    let projected = []
+    this.unproject = unproject
+    
+
     if ((renderWhileDragging || !isDragging) && locations) {
       let i = 0;
       for (let location of locations) {
         const pixel = project(location);
-        projected.push(pixel)
+        
         const pixelRounded = [round(pixel[0], 1), round(pixel[1], 1)];
         if (
           pixelRounded[0] + dotRadius >= 0 &&
@@ -76,7 +87,7 @@ export default class ScatterplotOverlay extends PureComponent {
         }
         
       }
-      if (onProjected) onProjected(projected)
+      //if (onProjected) onProjected(projected)
       
     }
   };
