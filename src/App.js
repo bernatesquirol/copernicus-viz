@@ -92,6 +92,11 @@ class App extends Component {
         {...viewport}
         scrollZoom={false}
         dragPan={false}
+        scrollZoom={false}
+        dragRotate={false}
+        doubleClickZoom={false}
+        touchZoom={false}
+        touchRotate={false}
         mapStyle="mapbox://styles/mapbox/dark-v9"
         controller={
           new Controller({onClick:(point)=>{
